@@ -8,10 +8,15 @@
     "status": "active",
     "status_text": "Работает",
     "history_cartridge": [
-      { "date": "10.12.2025", "action": "Замена (Иванов И.)" },
-      { "date": "15.10.2025", "action": "Заправка" }
+      { "date": "10.12.2025", "action": "Замена (Сидоров А.)" },
+      { "date": "15.10.2025", "action": "Заправка" },
+      { "date": "01.08.2025", "action": "Установка нового оригинала" },
+      { "date": "12.05.2025", "action": "Замена (Иванов И.)" }
     ],
-    "history_repair": []
+    "history_repair": [
+      { "date": "10.01.2025", "action": "Чистка ролика захвата" },
+      { "date": "15.11.2024", "action": "Профилактика печки" }
+    ]
   },
   {
     "id": 2,
@@ -21,7 +26,10 @@
     "cartridge": "TK-1160",
     "status": "warning",
     "status_text": "Мало тонера",
-    "history_cartridge": [{ "date": "01.11.2025", "action": "Установка нового" }],
+    "history_cartridge": [
+      { "date": "05.12.2025", "action": "Встряхнули картридж" },
+      { "date": "01.11.2025", "action": "Установка нового" }
+    ],
     "history_repair": []
   },
   {
@@ -33,7 +41,10 @@
     "status": "repair",
     "status_text": "В ремонте",
     "history_cartridge": [{ "date": "20.09.2025", "action": "Замена" }],
-    "history_repair": [{ "date": "09.12.2025", "action": "Зажевал бумагу, сдан в сервис" }]
+    "history_repair": [
+      { "date": "09.12.2025", "action": "Зажевал бумагу, повреждена термопленка" },
+      { "date": "14.03.2025", "action": "Замена USB разъема" }
+    ]
   },
   {
     "id": 4,
@@ -43,7 +54,11 @@
     "cartridge": "106R02773",
     "status": "active",
     "status_text": "Работает",
-    "history_cartridge": [],
+    "history_cartridge": [
+      { "date": "01.12.2025", "action": "Замена" },
+      { "date": "05.06.2025", "action": "Замена" },
+      { "date": "10.01.2025", "action": "Замена (большой расход)" }
+    ],
     "history_repair": []
   },
   {
@@ -54,8 +69,11 @@
     "cartridge": "Q2612A",
     "status": "active",
     "status_text": "Работает",
-    "history_cartridge": [{ "date": "05.12.2025", "action": "Замена фотобарабана" }],
-    "history_repair": []
+    "history_cartridge": [
+      { "date": "05.12.2025", "action": "Замена" },
+      { "date": "20.04.2025", "action": "Заправка" }
+    ],
+    "history_repair": [{ "date": "05.12.2025", "action": "Замена фотобарабана (черные полосы)" }]
   },
   {
     "id": 6,
@@ -64,9 +82,11 @@
     "location": "ул. Ленина 68, Охрана",
     "cartridge": "TN-2335",
     "status": "inactive",
-    "status_text": "Ждет списания",
+    "status_text": "Списан",
     "history_cartridge": [],
-    "history_repair": [{ "date": "01.12.2025", "action": "Сгорела плата" }]
+    "history_repair": [
+      { "date": "01.12.2025", "action": "Сгорела плата питания. Ремонт нецелесообразен." }
+    ]
   },
   {
     "id": 7,
@@ -76,7 +96,7 @@
     "cartridge": "PC-211EV",
     "status": "active",
     "status_text": "Работает",
-    "history_cartridge": [],
+    "history_cartridge": [{ "date": "11.11.2025", "action": "Чип заблокирован, замена чипа" }],
     "history_repair": []
   },
   {
@@ -86,9 +106,9 @@
     "location": "ул. Ленина 68, Директор",
     "cartridge": "TK-1170",
     "status": "warning",
-    "status_text": "Требует обслуживания",
+    "status_text": "Требует ТО",
     "history_cartridge": [{ "date": "10.11.2025", "action": "Замена" }],
-    "history_repair": []
+    "history_repair": [{ "date": "08.12.2025", "action": "Скрип при печати" }]
   },
   {
     "id": 9,
@@ -109,7 +129,10 @@
     "cartridge": "Cartridge 725",
     "status": "active",
     "status_text": "Работает",
-    "history_cartridge": [{ "date": "02.12.2025", "action": "Заправка" }],
+    "history_cartridge": [
+      { "date": "02.12.2025", "action": "Заправка" },
+      { "date": "01.09.2025", "action": "Замена" }
+    ],
     "history_repair": []
   }
 ]
