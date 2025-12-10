@@ -1,218 +1,275 @@
-// script.js (module)
-const PRINTERS_URL = "./printers.json";
-const HISTORY_URL = "./db.json";
+const tg = window.Telegram.WebApp;
+tg.expand();
+// Устанавливаем цвета для шапки и фона Telegram WebApp
+tg.setHeaderColor(getComputedStyle(document.documentElement).getPropertyValue("--bg-color").trim());
+tg.setBackgroundColor(
+  getComputedStyle(document.documentElement).getPropertyValue("--bg-color").trim()
+);
 
-const qs = (sel) => document.querySelector(sel);
-const qsa = (sel) => Array.from(document.querySelectorAll(sel));
+const DATA_URL = "db.json";
 
-/** Утилиты */
-function safeText(text) {
-  return text == null ? "" : String(text);
-}
-function formatDateISO8601(dtStr) {
-  const d = new Date(dtStr);
-  if (Number.isNaN(d.getTime())) return safeText(dtStr);
-  return d.toLocaleString("ru-RU", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+let appData = { printers: [], cartridges: [] };
+let currentPrinterId = null;
+
+// Стек для корректной обработки нативной кнопки "Назад"
+// Содержит имена страниц: 'list', 'details', 'add_printer', 'stock_list', 'add_cartridge', 'issue'
+let navHistory = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchData();
+
+  // Слушаем нативную кнопку "Назад"
+  tg.BackButton.onClick(() => {
+    handleBack();
   });
-}
-function debounce(fn, ms = 250) {
-  let t;
-  return (...args) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), ms);
-  };
-}
+});
 
-/** Состояние */
-const state = {
-  printers: [],
-  history: [],
-  filteredHistory: [],
-  currentPage: 1,
-  pageSize: 10,
-  search: "",
-  filterLocation: "",
-};
-
-/** Загрузка данных */
-async function loadJson(url) {
+async function fetchData() {
   try {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.error("Fetch error", url, err);
-    return null;
+    const response = await fetch(DATA_URL);
+    if (!response.ok) throw new Error("Ошибка сети при загрузке db.json");
+    appData = await response.json();
+
+    renderPrinters(appData.printers);
+    renderStock(appData.cartridges);
+  } catch (error) {
+    document.getElementById(
+      "printer-list"
+    ).innerHTML = `<p style="text-align:center; padding:20px; color:var(--status-err)">Ошибка загрузки базы: ${error.message}</p>`;
   }
 }
 
-async function init() {
-  const [printersData, historyData] = await Promise.all([
-    loadJson(PRINTERS_URL),
-    loadJson(HISTORY_URL),
-  ]);
+// === ОБЩИЕ ФУНКЦИИ НАВИГАЦИИ ===
 
-  state.printers = Array.isArray(printersData) ? printersData : printersData?.printers || [];
-  state.history = Array.isArray(historyData)
-    ? historyData
-    : historyData?.history || historyData || [];
-  // сортируем по дате (убывание)
-  state.history.sort((a, b) => new Date(b.date) - new Date(a.date));
-  state.filteredHistory = state.history.slice();
-
-  populateLocationFilter();
-  renderPrinters();
-  renderHistory();
-  bindUI();
+function hideAllInnerPages() {
+  // Скрывает все страницы внутри обоих табов, кроме их главных списков
+  document.getElementById("page-details").classList.add("hidden");
+  document.getElementById("page-add-printer").classList.add("hidden");
+  document.getElementById("page-issue").classList.add("hidden");
+  document.getElementById("page-add-cartridge").classList.add("hidden");
+  document.getElementById("page-list").classList.add("hidden");
+  document.getElementById("page-stock-list").classList.add("hidden");
 }
 
-/** Рендер списка принтеров */
-function renderPrinters() {
-  const list = qs("#printersList");
-  list.innerHTML = "";
-  if (!state.printers.length) {
-    list.textContent = "Список принтеров пуст.";
+function switchTab(tabName, el) {
+  // 1. Сброс UI табов
+  document.querySelectorAll(".nav-item").forEach((item) => item.classList.remove("active"));
+  if (el) el.classList.add("active");
+
+  // 2. Скрытие всего содержимого табов
+  document.querySelectorAll(".tab-content").forEach((content) => content.classList.add("hidden"));
+
+  // 3. Установка текущего состояния
+  navHistory = []; // Сброс истории при переключении табов
+  tg.BackButton.hide();
+
+  // 4. Отображение нужного таба и его главной страницы
+  document.getElementById(`tab-${tabName}`).classList.remove("hidden");
+
+  if (tabName === "printers") {
+    document.getElementById("page-list").classList.remove("hidden");
+    document.getElementById("fab-printer").classList.remove("hidden"); // FAB для принтеров
+  } else if (tabName === "stock") {
+    document.getElementById("page-stock-list").classList.remove("hidden");
+    document.getElementById("fab-cartridge").classList.remove("hidden"); // FAB для картриджей
+  }
+}
+
+function pushState(pageName) {
+  navHistory.push(pageName);
+  if (navHistory.length > 0) {
+    tg.BackButton.show();
+  }
+}
+
+// === ЛОГИКА КНОПКИ НАЗАД ===
+function handleBack() {
+  const state = navHistory.pop();
+
+  if (!state) {
+    tg.close();
     return;
   }
-  const fragment = document.createDocumentFragment();
-  for (const p of state.printers) {
-    const card = document.createElement("article");
-    card.className = "card";
-    card.setAttribute("role", "listitem");
-    const title = document.createElement("div");
-    title.className = "title";
-    title.textContent = p.name || "—";
-    const meta = document.createElement("div");
-    meta.className = "meta";
-    meta.textContent = `${p.location || "Не указано"} • ${p.model || ""}`;
-    card.append(title, meta);
-    fragment.append(card);
+
+  if (state === "details" || state === "add_printer" || state === "issue") {
+    showPrinterList(); // Возвращаемся в список принтеров
+  } else if (state === "add_cartridge") {
+    showStockList(); // Возвращаемся в список склада
   }
-  list.append(fragment);
 }
 
-/** Рендер истории с пагинацией */
-function renderHistory() {
-  const tbody = qs("#historyTable tbody");
-  tbody.innerHTML = "";
-  const { currentPage, pageSize, filteredHistory } = state;
-  const total = filteredHistory.length;
-  const start = (currentPage - 1) * pageSize;
-  const pageItems = filteredHistory.slice(start, start + pageSize);
+// === ФУНКЦИИ ПРИНТЕРОВ ===
 
-  for (const rec of pageItems) {
-    const tr = document.createElement("tr");
-    const tdDate = document.createElement("td");
-    tdDate.textContent = formatDateISO8601(rec.date);
-    const tdPrinter = document.createElement("td");
-    tdPrinter.textContent = safeText(rec.printer || rec.device || "");
-    const tdAction = document.createElement("td");
-    tdAction.textContent = safeText(rec.action || rec.event || "");
-    const tdUser = document.createElement("td");
-    tdUser.textContent = safeText(rec.user || rec.by || "");
-    tr.append(tdDate, tdPrinter, tdAction, tdUser);
-    tbody.append(tr);
-  }
-
-  renderPager(total, currentPage, pageSize);
-}
-
-/** Пагинация */
-function renderPager(total, currentPage, pageSize) {
-  const pager = qs("#historyPager");
-  pager.innerHTML = "";
-  const pages = Math.max(1, Math.ceil(total / pageSize));
-  const info = document.createElement("div");
-  info.textContent = `Показано ${Math.min(total, pageSize)} из ${total}`;
-  pager.append(info);
-
-  const prev = document.createElement("button");
-  prev.textContent = "◀";
-  prev.disabled = currentPage <= 1;
-  prev.addEventListener("click", () => {
-    state.currentPage = Math.max(1, state.currentPage - 1);
-    renderHistory();
+function renderPrinters(list) {
+  const container = document.getElementById("printer-list");
+  container.innerHTML = "";
+  list.forEach((p) => {
+    const div = document.createElement("div");
+    div.className = "printer-card";
+    div.style.borderLeftColor = getStatusColor(p.status);
+    div.innerHTML = `
+            <div class="card-header">
+                <span class="p-number">№ ${p.number}</span>
+                <span class="status-badge st-${p.status}">${p.status_text}</span>
+            </div>
+            <div class="p-model">${p.model}</div>
+            <div class="p-location">📍 ${p.location}</div>
+        `;
+    div.onclick = () => openPrinterDetails(p);
+    container.appendChild(div);
   });
-  pager.append(prev);
+}
 
-  const next = document.createElement("button");
-  next.textContent = "▶";
-  next.disabled = currentPage >= pages;
-  next.addEventListener("click", () => {
-    state.currentPage = Math.min(pages, state.currentPage + 1);
-    renderHistory();
+function showPrinterList() {
+  hideAllInnerPages();
+  document.getElementById("page-list").classList.remove("hidden");
+  tg.BackButton.hide();
+  navHistory = [];
+}
+
+function openPrinterDetails(printer) {
+  currentPrinterId = printer.id;
+  hideAllInnerPages();
+  document.getElementById("page-details").classList.remove("hidden");
+
+  // Заполнение деталей
+  document.getElementById("detail-number").innerText = `Принтер № ${printer.number}`;
+  document.getElementById("detail-model").innerText = printer.model;
+  document.getElementById("detail-location").innerText = printer.location;
+  document.getElementById("detail-cartridge").innerText = printer.cartridge;
+
+  const sb = document.getElementById("detail-status");
+  sb.className = `status-badge-large st-${printer.status}`;
+  sb.innerText = printer.status_text;
+
+  // Восстановленный рендеринг раздельной истории
+  renderHistory("history-cartridge", printer.history_cartridge);
+  renderHistory("history-repair", printer.history_repair);
+
+  pushState("details");
+}
+
+function showAddPrinter() {
+  hideAllInnerPages();
+  document.getElementById("page-add-printer").classList.remove("hidden");
+  pushState("add_printer");
+}
+
+function showIssuePage() {
+  hideAllInnerPages();
+  document.getElementById("page-issue").classList.remove("hidden");
+
+  const printer = appData.printers.find((p) => p.id === currentPrinterId);
+  if (printer) {
+    document.getElementById(
+      "issue-subtitle"
+    ).innerText = `Для принтера № ${printer.number} (${printer.model})`;
+  }
+  pushState("issue");
+}
+
+// Рендер истории
+function renderHistory(elId, list) {
+  const container = document.getElementById(elId);
+  container.innerHTML = "";
+  if (!list || list.length === 0) {
+    container.innerHTML =
+      '<li style="color:var(--hint-color); text-align:center; padding:12px 16px;">Нет записей</li>';
+    return;
+  }
+  list.forEach((item) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+            <div class="h-row">
+                <span class="h-act">${item.action}</span>
+                <span class="h-date">${item.date}</span>
+            </div>
+        `;
+    container.appendChild(li);
   });
-  pager.append(next);
 }
 
-/** Фильтрация и поиск по истории */
-function applyFilters() {
-  let list = state.history.slice();
+// === ФУНКЦИИ СКЛАДА ===
 
-  if (state.filterLocation) {
-    // если записи содержат поле location/printer, фильтруем
-    list = list.filter(
-      (r) => r.location === state.filterLocation || r.printer === state.filterLocation
-    );
+function renderStock(list) {
+  const container = document.getElementById("stock-list");
+  container.innerHTML = "";
+
+  if (list.length === 0) {
+    container.innerHTML =
+      '<div style="text-align:center; padding:20px; color:var(--hint-color)">Склад пуст</div>';
+    return;
   }
 
-  if (state.search) {
-    const s = state.search.toLowerCase();
-    list = list.filter(
-      (r) =>
-        (r.printer && String(r.printer).toLowerCase().includes(s)) ||
-        (r.action && String(r.action).toLowerCase().includes(s)) ||
-        (r.user && String(r.user).toLowerCase().includes(s)) ||
-        (r.note && String(r.note).toLowerCase().includes(s))
-    );
-  }
-
-  state.filteredHistory = list;
-  state.currentPage = 1;
-  renderHistory();
+  list.forEach((item) => {
+    const div = document.createElement("div");
+    div.className = "stock-card";
+    div.innerHTML = `
+            <div class="stock-info">
+                <h3>№ ${item.number}</h3>
+                <p>${item.model}</p>
+                <div class="stock-date">Прибыл: ${item.date}</div>
+            </div>
+            <button class="stock-action" onclick="event.stopPropagation(); mockTake('${item.number}', '${item.model}')">Взять</button>
+        `;
+    container.appendChild(div);
+  });
 }
 
-/** Заполнение фильтра по локациям на основе данных принтеров */
-function populateLocationFilter() {
-  const sel = qs("#filterLocation");
-  const locs = new Set(state.printers.map((p) => p.location).filter(Boolean));
-  for (const l of locs) {
-    const opt = document.createElement("option");
-    opt.value = l;
-    opt.textContent = l;
-    sel.append(opt);
-  }
+function showStockList() {
+  hideAllInnerPages();
+  document.getElementById("page-stock-list").classList.remove("hidden");
+  tg.BackButton.hide();
+  navHistory = [];
 }
 
-/** Привязка UI событий */
-function bindUI() {
-  const search = qs("#searchInput");
-  search.addEventListener(
-    "input",
-    debounce((e) => {
-      state.search = e.target.value.trim();
-      applyFilters();
-    }, 300)
+function showAddCartridge() {
+  hideAllInnerPages();
+  document.getElementById("page-add-cartridge").classList.remove("hidden");
+  pushState("add_cartridge");
+}
+
+// === УТИЛИТЫ И МОКИ ===
+function getStatusColor(status) {
+  const colors = { active: "#28cd41", warning: "#ff9500", repair: "#ff3b30" };
+  return colors[status] || "#8e8e93";
+}
+
+function mockSave(type) {
+  tg.MainButton.showProgress();
+
+  setTimeout(() => {
+    tg.MainButton.hideProgress();
+
+    let message = "Успешно сохранено (Тест)!";
+    if (type === "printer") {
+      message = "Новый принтер добавлен в базу (Тест)!";
+      showPrinterList();
+    } else if (type === "issue") {
+      message = "Выдача картриджа зафиксирована (Тест)!";
+      // Возвращаемся к деталям принтера
+      const p = appData.printers.find((x) => x.id === currentPrinterId);
+      openPrinterDetails(p);
+      navHistory.pop(); // Удаляем дубликат истории
+    } else if (type === "cartridge") {
+      message = "Новый картридж добавлен на склад (Тест)!";
+      showStockList();
+    }
+
+    tg.showAlert(message);
+  }, 500);
+}
+
+function mockTake(number, model) {
+  tg.showConfirm(
+    `Вы уверены, что хотите забрать картридж № ${number} (${model}) со склада?`,
+    (ok) => {
+      if (ok) tg.showAlert(`Картридж № ${number} помечен как выданный со склада.`);
+    }
   );
-
-  const locSel = qs("#filterLocation");
-  locSel.addEventListener("change", (e) => {
-    state.filterLocation = e.target.value;
-    applyFilters();
-  });
-
-  const pageSizeSel = qs("#historyPageSize");
-  pageSizeSel.addEventListener("change", (e) => {
-    state.pageSize = Number(e.target.value) || 10;
-    state.currentPage = 1;
-    renderHistory();
-  });
 }
 
-/** Запуск */
-document.addEventListener("DOMContentLoaded", init);
+// Инициализация при старте, чтобы показать вкладку Принтеры
+window.onload = () => {
+  switchTab("printers", document.querySelector(".nav-item"));
+};
