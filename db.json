@@ -8,60 +8,163 @@
       "cartridge": "CF226A",
       "status": "active",
       "status_text": "Работает",
-      "history_cartridge": [],
-      "history_repair": []
+      "history_cartridge": [
+        { "date": "10.12.2025", "action": "Замена (Сидоров А.)" },
+        { "date": "15.10.2025", "action": "Заправка" },
+        { "date": "01.08.2025", "action": "Установка нового оригинала" },
+        { "date": "12.05.2025", "action": "Замена (Иванов И.)" }
+      ],
+      "history_repair": [
+        { "date": "10.01.2025", "action": "Чистка ролика захвата" },
+        { "date": "15.11.2024", "action": "Профилактика печки" }
+      ]
     },
     {
       "id": 2,
-      "number": "0005",
-      "model": "Xerox Phaser 3020",
-      "location": "ул. Ленина 68, Склад",
-      "cartridge": "106R02773",
+      "number": "0002",
+      "model": "Kyocera ECOSYS P2040dn",
+      "location": "ул. Ленина 68, Ресепшн",
+      "cartridge": "TK-1160",
       "status": "warning",
       "status_text": "Мало тонера",
-      "history_cartridge": [],
+      "history_cartridge": [
+        { "date": "05.12.2025", "action": "Встряхнули картридж" },
+        { "date": "01.11.2025", "action": "Установка нового" }
+      ],
       "history_repair": []
     },
     {
       "id": 3,
+      "number": "0003",
+      "model": "Canon i-SENSYS LBP6030B",
+      "location": "г. Новокузнецк, ул. Сеченова, Бухгалтерия",
+      "cartridge": "Cartridge 725",
+      "status": "repair",
+      "status_text": "В ремонте",
+      "history_cartridge": [{ "date": "20.09.2025", "action": "Замена" }],
+      "history_repair": [
+        { "date": "09.12.2025", "action": "Зажевал бумагу, повреждена термопленка" },
+        { "date": "14.03.2025", "action": "Замена USB разъема" }
+      ]
+    },
+    {
+      "id": 4,
+      "number": "0005",
+      "model": "Xerox Phaser 3020",
+      "location": "ул. Ленина 68, Склад",
+      "cartridge": "106R02773",
+      "status": "active",
+      "status_text": "Работает",
+      "history_cartridge": [
+        { "date": "01.12.2025", "action": "Замена" },
+        { "date": "05.06.2025", "action": "Замена" },
+        { "date": "10.01.2025", "action": "Замена (большой расход)" }
+      ],
+      "history_repair": []
+    },
+    {
+      "id": 5,
+      "number": "0008",
+      "model": "HP LaserJet 1020",
+      "location": "г. Новокузнецк, ул. Сеченова, Отдел кадров",
+      "cartridge": "Q2612A",
+      "status": "active",
+      "status_text": "Работает",
+      "history_cartridge": [
+        { "date": "05.12.2025", "action": "Замена" },
+        { "date": "20.04.2025", "action": "Заправка" }
+      ],
+      "history_repair": [{ "date": "05.12.2025", "action": "Замена фотобарабана (черные полосы)" }]
+    },
+    {
+      "id": 6,
+      "number": "0012",
+      "model": "Brother HL-L2300D",
+      "location": "ул. Ленина 68, Охрана",
+      "cartridge": "TN-2335",
+      "status": "inactive",
+      "status_text": "Списан",
+      "history_cartridge": [],
+      "history_repair": [
+        { "date": "01.12.2025", "action": "Сгорела плата питания. Ремонт нецелесообразен." }
+      ]
+    },
+    {
+      "id": 7,
+      "number": "0015",
+      "model": "Pantum P2500W",
+      "location": "г. Новокузнецк, ул. Сеченова, Серверная",
+      "cartridge": "PC-211EV",
+      "status": "active",
+      "status_text": "Работает",
+      "history_cartridge": [{ "date": "11.11.2025", "action": "Чип заблокирован, замена чипа" }],
+      "history_repair": []
+    },
+    {
+      "id": 8,
+      "number": "0020",
+      "model": "Kyocera ECOSYS M2540dn",
+      "location": "ул. Ленина 68, Директор",
+      "cartridge": "TK-1170",
+      "status": "warning",
+      "status_text": "Требует ТО",
+      "history_cartridge": [{ "date": "10.11.2025", "action": "Замена" }],
+      "history_repair": [{ "date": "08.12.2025", "action": "Скрип при печати" }]
+    },
+    {
+      "id": 9,
+      "number": "0022",
+      "model": "HP LaserJet Pro M28a",
+      "location": "г. Новокузнецк, ул. Сеченова, Коридор 2 эт.",
+      "cartridge": "CF244A",
+      "status": "active",
+      "status_text": "Работает",
+      "history_cartridge": [],
+      "history_repair": []
+    },
+    {
+      "id": 10,
       "number": "0030",
       "model": "Canon i-SENSYS MF3010",
       "location": "ул. Ленина 68, Менеджеры",
       "cartridge": "Cartridge 725",
-      "status": "repair",
-      "status_text": "В ремонте",
-      "history_cartridge": [],
+      "status": "active",
+      "status_text": "Работает",
+      "history_cartridge": [
+        { "date": "02.12.2025", "action": "Заправка" },
+        { "date": "01.09.2025", "action": "Замена" }
+      ],
       "history_repair": []
     }
   ],
   "cartridges": [
     {
       "id": 101,
-      "number": "C-1055",
+      "number": "№25",
       "model": "HP Q2612A",
       "date": "10.12.2025"
     },
     {
       "id": 102,
-      "number": "C-1056",
+      "number": "№33",
       "model": "HP Q2612A",
       "date": "10.12.2025"
     },
     {
       "id": 103,
-      "number": "C-2001",
+      "number": "№1",
       "model": "Kyocera TK-1160",
       "date": "09.12.2025"
     },
     {
       "id": 104,
-      "number": "C-2002",
+      "number": "№65",
       "model": "Kyocera TK-1160",
       "date": "09.12.2025"
     },
     {
       "id": 105,
-      "number": "C-3099",
+      "number": "№99",
       "model": "Canon 725",
       "date": "01.12.2025"
     }
