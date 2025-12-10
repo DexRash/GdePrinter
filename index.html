@@ -1,105 +1,65 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>КДКБ Спектр</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GdePrinter — учёт принтеров</title>
+  <meta name="description" content="Учёт принтеров — список, история, поиск и фильтрация" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-    <div id="tab-printers" class="tab-content active-tab">
-        <div id="page-list" class="page">
-            <header class="header">
-                <h1>🖨️ Принтеры</h1>
-                <p class="subtitle">База оборудования</p>
-            </header>
-            
-            <div id="printer-list" class="list-container">
-                <div class="loader">Загрузка...</div>
-            </div>
-            
-            <button class="fab" onclick="showAddPrinter()">+</button>
-        </div>
-
-        <div id="page-details" class="page hidden">
-            <header class="header sticky">
-                <h2 id="detail-number" class="page-title">Принтер #</h2>
-            </header>
-            <div class="content-scroll">
-                <div class="card detail-card">
-                    <div class="detail-header-row">
-                        <div class="status-badge-large" id="detail-status">Статус</div>
-                    </div>
-                    <h3 id="detail-model">Модель</h3>
-                    <div class="info-row"><span class="info-label">📍 Адрес:</span> <span id="detail-location"></span></div>
-                    <div class="info-row"><span class="info-label">💾 Картридж:</span> <span id="detail-cartridge"></span></div>
-                    <button class="main-btn" onclick="showIssuePage()">🔄 Выдать картридж</button>
-                </div>
-                <div class="section-title">История</div>
-                <ul id="history-list" class="history-list"></ul>
-            </div>
-        </div>
-        
-        <div id="page-add-printer" class="page hidden">
-             <header class="header"><h2>➕ Новый принтер</h2></header>
-             <div class="form-container">
-                 <div class="form-group"><label>Инв. номер</label><input type="text"></div>
-                 <div class="form-group"><label>Модель</label><input type="text"></div>
-                 <button class="main-btn primary" onclick="mockSave('printer')">Сохранить</button>
-             </div>
-        </div>
-
-        <div id="page-issue" class="page hidden">
-            <header class="header"><h2>🔄 Выдача</h2></header>
-            <div class="form-container">
-                <div class="form-group"><label>Сотрудник</label><input type="text"></div>
-                <button class="main-btn primary" onclick="mockSave('issue')">Выдать</button>
-            </div>
-        </div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <h1 class="site-title">GdePrinter</h1>
+      <div class="controls">
+        <input id="searchInput" type="search" placeholder="Поиск принтера или истории..." aria-label="Поиск" />
+        <select id="filterLocation" aria-label="Фильтр по местоположению">
+          <option value="">Все локации</option>
+        </select>
+      </div>
     </div>
+  </header>
 
-    <div id="tab-stock" class="tab-content hidden">
-        <div id="page-stock-list" class="page">
-            <header class="header">
-                <h1>📦 Склад</h1>
-                <p class="subtitle">Новые картриджи в наличии</p>
-            </header>
+  <main class="container main-grid" id="main">
+    <section class="panel printers-panel" aria-labelledby="printersTitle">
+      <h2 id="printersTitle">Принтеры</h2>
+      <div id="printersList" class="cards" role="list" aria-live="polite"></div>
+    </section>
 
-            <div id="stock-list" class="list-container">
-                </div>
-
-            <button class="fab" onclick="showAddCartridge()">+</button>
+    <section class="panel history-panel" aria-labelledby="historyTitle">
+      <div class="panel-header">
+        <h2 id="historyTitle">История событий</h2>
+        <div class="history-tools">
+          <label class="small">Показывать по
+            <select id="historyPageSize" aria-label="Количество записей на странице">
+              <option>10</option><option>25</option><option>50</option>
+            </select>
+          </label>
         </div>
+      </div>
+      <div id="historyContainer" class="history-container">
+        <table id="historyTable" class="history-table" aria-describedby="historyTitle">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Принтер</th>
+              <th>Действие</th>
+              <th>Пользователь</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="pager" id="historyPager" aria-label="Пагинация"></div>
+    </section>
+  </main>
 
-        <div id="page-add-cartridge" class="page hidden">
-            <header class="header"><h2>➕ Приход на склад</h2></header>
-            <div class="form-container">
-                <div class="form-group">
-                    <label>Номер (штрихкод/ID)</label>
-                    <input type="text" placeholder="Например: C-2023">
-                </div>
-                <div class="form-group">
-                    <label>Модель</label>
-                    <input type="text" placeholder="Например: Q2612A">
-                </div>
-                <button class="main-btn primary" onclick="mockSave('cartridge')">Добавить на склад</button>
-            </div>
-        </div>
+  <footer class="site-footer">
+    <div class="container">
+      <small>GdePrinter — Проект учёта принтеров</small>
     </div>
+  </footer>
 
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('printers', this)">
-            <span class="nav-icon">🖨️</span>
-            <span class="nav-label">Принтеры</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('stock', this)">
-            <span class="nav-icon">📦</span>
-            <span class="nav-label">Склад</span>
-        </div>
-    </nav>
-
-    <script src="script.js"></script>
+  <script src="script.js" type="module"></script>
 </body>
 </html>
