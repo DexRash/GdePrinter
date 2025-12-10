@@ -1,115 +1,105 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>ГдеПринтер?</title>
-    <link rel="stylesheet" href="style.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>КДКБ Спектр</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  </head>
-  <body>
-    <div id="page-list" class="page">
-      <header class="header">
-        <h1>🖨️ ГдеПринтер?</h1>
-        <p class="subtitle">База оборудования</p>
-      </header>
+</head>
+<body>
 
-      <div id="printer-list" class="list-container">
-        <div class="loader">Загрузка базы...</div>
-      </div>
+    <div id="tab-printers" class="tab-content active-tab">
+        <div id="page-list" class="page">
+            <header class="header">
+                <h1>🖨️ Принтеры</h1>
+                <p class="subtitle">База оборудования</p>
+            </header>
+            
+            <div id="printer-list" class="list-container">
+                <div class="loader">Загрузка...</div>
+            </div>
+            
+            <button class="fab" onclick="showAddPrinter()">+</button>
+        </div>
 
-      <button class="fab" onclick="showAddPage()">+</button>
+        <div id="page-details" class="page hidden">
+            <header class="header sticky">
+                <h2 id="detail-number" class="page-title">Принтер #</h2>
+            </header>
+            <div class="content-scroll">
+                <div class="card detail-card">
+                    <div class="detail-header-row">
+                        <div class="status-badge-large" id="detail-status">Статус</div>
+                    </div>
+                    <h3 id="detail-model">Модель</h3>
+                    <div class="info-row"><span class="info-label">📍 Адрес:</span> <span id="detail-location"></span></div>
+                    <div class="info-row"><span class="info-label">💾 Картридж:</span> <span id="detail-cartridge"></span></div>
+                    <button class="main-btn" onclick="showIssuePage()">🔄 Выдать картридж</button>
+                </div>
+                <div class="section-title">История</div>
+                <ul id="history-list" class="history-list"></ul>
+            </div>
+        </div>
+        
+        <div id="page-add-printer" class="page hidden">
+             <header class="header"><h2>➕ Новый принтер</h2></header>
+             <div class="form-container">
+                 <div class="form-group"><label>Инв. номер</label><input type="text"></div>
+                 <div class="form-group"><label>Модель</label><input type="text"></div>
+                 <button class="main-btn primary" onclick="mockSave('printer')">Сохранить</button>
+             </div>
+        </div>
+
+        <div id="page-issue" class="page hidden">
+            <header class="header"><h2>🔄 Выдача</h2></header>
+            <div class="form-container">
+                <div class="form-group"><label>Сотрудник</label><input type="text"></div>
+                <button class="main-btn primary" onclick="mockSave('issue')">Выдать</button>
+            </div>
+        </div>
     </div>
 
-    <div id="page-details" class="page hidden">
-      <header class="header sticky">
-        <h2 id="detail-number" class="page-title">Принтер #</h2>
-      </header>
+    <div id="tab-stock" class="tab-content hidden">
+        <div id="page-stock-list" class="page">
+            <header class="header">
+                <h1>📦 Склад</h1>
+                <p class="subtitle">Новые картриджи в наличии</p>
+            </header>
 
-      <div class="content-scroll">
-        <div class="card detail-card">
-          <div class="detail-header-row">
-            <div class="status-badge-large" id="detail-status">Статус</div>
-          </div>
+            <div id="stock-list" class="list-container">
+                </div>
 
-          <h3 id="detail-model">Модель</h3>
-
-          <div class="info-row">
-            <span class="info-label">📍 Адрес:</span>
-            <span class="info-value" id="detail-location"></span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">💾 Картридж:</span>
-            <span class="info-value" id="detail-cartridge"></span>
-          </div>
-
-          <button class="main-btn" onclick="showIssuePage()">🔄 Выдать картридж</button>
+            <button class="fab" onclick="showAddCartridge()">+</button>
         </div>
 
-        <div class="section-title">История замен</div>
-        <ul id="history-cartridge" class="history-list"></ul>
-
-        <div class="section-title">История ремонтов</div>
-        <ul id="history-repair" class="history-list"></ul>
-      </div>
+        <div id="page-add-cartridge" class="page hidden">
+            <header class="header"><h2>➕ Приход на склад</h2></header>
+            <div class="form-container">
+                <div class="form-group">
+                    <label>Номер (штрихкод/ID)</label>
+                    <input type="text" placeholder="Например: C-2023">
+                </div>
+                <div class="form-group">
+                    <label>Модель</label>
+                    <input type="text" placeholder="Например: Q2612A">
+                </div>
+                <button class="main-btn primary" onclick="mockSave('cartridge')">Добавить на склад</button>
+            </div>
+        </div>
     </div>
 
-    <div id="page-add" class="page hidden">
-      <header class="header">
-        <h2>➕ Новый принтер</h2>
-      </header>
-      <div class="form-container">
-        <div class="form-group">
-          <label>Инвентарный номер</label>
-          <input type="text" placeholder="Например: 0055" />
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('printers', this)">
+            <span class="nav-icon">🖨️</span>
+            <span class="nav-label">Принтеры</span>
         </div>
-        <div class="form-group">
-          <label>Модель</label>
-          <input type="text" placeholder="Например: HP LaserJet 1020" />
+        <div class="nav-item" onclick="switchTab('stock', this)">
+            <span class="nav-icon">📦</span>
+            <span class="nav-label">Склад</span>
         </div>
-        <div class="form-group">
-          <label>Расположение</label>
-          <input type="text" placeholder="Адрес, кабинет" />
-        </div>
-        <div class="form-group">
-          <label>Тип картриджа</label>
-          <input type="text" placeholder="Например: Q2612A" />
-        </div>
-
-        <button class="main-btn primary" onclick="mockSave('printer')">Сохранить в базу</button>
-      </div>
-    </div>
-
-    <div id="page-issue" class="page hidden">
-      <header class="header">
-        <h2>🔄 Выдача картриджа</h2>
-        <p class="subtitle" id="issue-subtitle">Для принтера ...</p>
-      </header>
-      <div class="form-container">
-        <div class="form-group">
-          <label>Что выдаем?</label>
-          <select id="issue-type">
-            <option>Новый картридж</option>
-            <option>Заправленный</option>
-            <option>Совместимый</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Кто получил (ФИО)</label>
-          <input type="text" placeholder="Иванов И.И." />
-        </div>
-        <div class="form-group">
-          <label>Комментарий</label>
-          <textarea rows="3" placeholder="Старый картридж сдан..."></textarea>
-        </div>
-
-        <button class="main-btn primary" onclick="mockSave('issue')">Подтвердить выдачу</button>
-      </div>
-    </div>
+    </nav>
 
     <script src="script.js"></script>
-  </body>
+</body>
 </html>
